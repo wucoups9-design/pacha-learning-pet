@@ -5,7 +5,7 @@ const petZone = $('.pet-zone');
 let stage = 1;
 let replyTimer;
 
-function setPetState(state = 'idle', duration = 0) { petZone.classList.remove('is-listening', 'is-happy', 'is-thinking', 'is-worried'); if (state !== 'idle') petZone.classList.add(`is-${state}`); clearTimeout(setPetState.timer); if (duration) setPetState.timer = setTimeout(() => setPetState('idle'), duration); }
+function setPetState(state = 'idle', duration = 0) { petZone.classList.remove('is-listening', 'is-happy', 'is-thinking', 'is-worried', 'is-running', 'is-cuddly', 'is-playing'); if (state !== 'idle') petZone.classList.add(`is-${state}`); clearTimeout(setPetState.timer); if (duration) setPetState.timer = setTimeout(() => setPetState('idle'), duration); }
 
 const replyMap = {
   empty: { text: '“里面是空心的”是一个重要线索！可是，水是怎样托住船的呢？你能讲讲水对船产生了什么力吗？', mood: '我在认真听！水是怎么帮忙的呢？', stage: 2 },
@@ -48,3 +48,6 @@ const plantActions = new Set();
 const plantCopy = { light: '阳光可以帮助植物制造养分。', water: '适量的水能帮助根部吸收养分，但不是越多越好。', air: '通风能让叶片和周围环境保持健康。' };
 document.querySelector('[data-stage="3"]').addEventListener('click', (event) => { if (!event.currentTarget.classList.contains('unlocked')) return; $('#plantLab').classList.remove('hide'); $('#plantLab').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('#mood').textContent = '阳台上的小植物也需要你的照顾！'; });
 document.querySelectorAll('[data-plant]').forEach((button) => button.addEventListener('click', (event) => { const action = event.currentTarget.dataset.plant; plantActions.add(action); event.currentTarget.classList.add('selected'); setPetState(plantActions.size === 3 ? 'happy' : 'listening', plantActions.size === 3 ? 1500 : 0); $('#plantStatus').textContent = `${plantActions.size} / 3 个照顾动作`; $('#plantResult').textContent = plantActions.size < 3 ? `豆豆记住啦：${plantCopy[action]} 还要继续观察植物的变化。` : '三项照顾都完成了！第二天，植物长出了一片新叶。豆豆学会了：植物生长需要合适的阳光、水和空气。'; if (plantActions.size === 3) { $('#growthCount').textContent = '4'; $('#mood').textContent = '小植物长出新叶啦！我们越来越会照顾彼此了。'; notify('植物章节完成：豆豆学会了照顾计划'); } }));
+
+const petReactions = { run: { state: 'running', mood: '我来啦！跑到你身边就有好事情～', notice: '豆豆跑过来找你了' }, cuddle: { state: 'cuddly', mood: '嗯嗯，再摸一下嘛……我最喜欢被你照顾了。', notice: '豆豆撒娇中' }, play: { state: 'playing', mood: '接住小球！玩完以后，你也要教我一个新知识哦。', notice: '豆豆跳起来接小球' } };
+document.querySelectorAll('[data-pet-action]').forEach((button) => button.addEventListener('click', (event) => { const reaction = petReactions[event.currentTarget.dataset.petAction]; setPetState(reaction.state, 2300); $('#mood').textContent = reaction.mood; notify(reaction.notice); }));

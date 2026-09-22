@@ -67,7 +67,7 @@ def main():
                 errors.append(f"broken reference in {page_path.relative_to(ROOT)}: {ref}")
 
     app = (ROOT / "demo/app.js").read_text(encoding="utf-8")
-    for marker in ("unlockNextChapter", "growthCount", "plantLab", "addEventListener"):
+    for marker in ("unlockNextChapter", "growthCount", "plantLab", "petReactions", "addEventListener"):
         if marker not in app:
             errors.append(f"missing interaction marker: {marker}")
 
