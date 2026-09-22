@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .plant-lab{margin-top:18px;padding:22px 25px;border:1px solid #d8e8d7;border-radius:18px;background:#f5fbf2;animation:up .35s ease both}.plant-lab-head{display:flex;justify-content:space-between;gap:20px;align-items:start}.plant-lab h2{margin-top:5px;font-size:17px}.plant-lab p{margin-top:6px;color:#849787;font-size:11px}.plant-status{padding:8px 11px;border-radius:20px;color:#5d895f;background:#e4f2df;font-size:10px;white-space:nowrap}.plant-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.plant-actions button{padding:9px 12px;border:1px solid #cfe2cc;border-radius:9px;color:#668267;background:#fff;font-size:11px}.plant-actions button.selected{color:#fff;border-color:#82b36a;background:#82b36a}.plant-result{margin-top:14px;padding:12px;border-radius:10px;color:#6f846d;background:#e9f5e5;font-size:11px;line-height:1.7}
+  </style>
 </head>
 <body>
   <div class="shell">
@@ -35,6 +38,8 @@
       <section class="lab hide" id="lab"><div class="lab-head"><div><label>NEXT · VIRTUAL LAB</label><h2>陪豆豆玩“不会下沉的小船”</h2></div><span>玩耍也是探索</span></div><div class="lab-grid"><div class="water"><div class="boat" id="boat"><i></i></div><strong id="labResult">先调整变量，再预测结果</strong></div><div class="controls"><label>船体宽度 <b id="widthValue">60</b></label><input id="width" type="range" min="35" max="90" value="60"><label>货物重量 <b id="cargoValue">3</b></label><input id="cargo" type="range" min="0" max="10" value="3"><button id="run">运行实验 <b>→</b></button></div></div></section>
 
       <section class="growth" id="growth"><div class="growth-head"><div><label>DOUDOU'S GROWTH JOURNEY</label><h2>豆豆的成长地图</h2><p>每学会一个知识，豆豆就会多一个可以探索的生活场景。</p></div><strong><span id="growthCount">2</span> <small>/ 6</small><span>章节已开启</span></strong></div><div class="road" id="road"><button class="done" data-stage="1"><i>✓</i><b>认识世界</b><small>观察与提问</small></button><em class="filled"></em><button class="current" data-stage="2"><i>♧</i><b>水上探险</b><small>浮力</small></button><em></em><button data-stage="3"><i>✿</i><b>阳台园丁</b><small>植物生长</small></button><em></em><button data-stage="4"><i>☼</i><b>光影侦探</b><small>光与影</small></button><em></em><button data-stage="5"><i>≋</i><b>天气管家</b><small>水循环</small></button><em></em><button data-stage="6"><i>⌁</i><b>小小发明家</b><small>结构与材料</small></button></div><div class="chapter-detail" id="chapterDetail"><i>♧</i><div><label>CURRENT CHAPTER · 水上探险</label><h3>让豆豆拥有一艘自己的小船</h3><p>教豆豆浮力、喂小鱼饼，再和它一起完成一次虚拟实验。</p></div><button id="nextChapter">预览下一章 <b>→</b></button></div></section>
+
+      <section class="plant-lab hide" id="plantLab"><div class="plant-lab-head"><div><label>CHAPTER 03 · BALCONY GARDEN</label><h2>帮豆豆照顾一盆小植物</h2><p>植物需要什么，才能慢慢长出新叶？请按你的判断选择照顾动作。</p></div><span class="plant-status" id="plantStatus">0 / 3 个照顾动作</span></div><div class="plant-actions"><button data-plant="light">☼ 放到阳光下</button><button data-plant="water">≋ 浇适量的水</button><button data-plant="air">✦ 留出通风空间</button></div><div class="plant-result" id="plantResult">豆豆抱着花盆等你安排第一项照顾任务。</div></section>
 
       <section class="memory hide" id="memory"><div>✦</div><span><label>豆豆记住了</label><b>浮力和排开的水有关</b><small>下一次，豆豆会在“阳台园丁”章节复习你的解释。</small></span><strong>82<small>% 理解度</small></strong></section>
       <footer>照顾豆豆的每一天，也是在长大自己的理解。<span>豆豆的成长日记 · Demo v3.0</span></footer>
