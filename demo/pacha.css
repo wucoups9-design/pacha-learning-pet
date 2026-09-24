@@ -1,0 +1,13 @@
+/* Four columns and two rows of illustrated poses, preserving generated alpha. */
+.puppet{width:196px;height:196px;bottom:29px;transform-origin:50% 88%}
+.pacha-sprite{display:block;width:100%;height:100%;background-image:url('../assets/pets/pacha-poses.png');background-size:400% 200%;background-repeat:no-repeat;transform-origin:center}
+.pacha-sprite[data-sheet="run"]{background-image:url('../assets/pets/pacha-trot.png')}
+.pet-room{height:330px}
+.pet-effect{bottom:195px}
+.pet-room[data-state="sleep"] .pet-effect{bottom:121px;color:#778b9b;font-size:18px}
+.pet-room[data-state="sleep"]{background:linear-gradient(#dfe7e4 0 65%,#c7c9b7 65% 66%,#e6dfce 66%)}
+.room-heading{letter-spacing:0}
+.msg.pet img{display:none}
+.msg.pet:before{content:'';display:block;flex:0 0 32px;height:32px;border-radius:8px;background:#f5efe5 url('../assets/pets/pacha-poses.png') 0 0 / 400% 200% no-repeat}
+.puppet:focus-visible{outline-offset:-10px}
+@media(max-width:650px){.puppet{width:178px;height:178px}.pet-room{height:305px}}
