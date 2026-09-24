@@ -19,8 +19,11 @@
   panel.querySelector('.lesson-return').before(advanced);
   q('#waterLearnStatus').textContent='完成三个小发现，再把它们连起来讲给帕恰。';
   const finalPanel=q('#quest-water [data-panel="teach"]');
-  finalPanel.querySelector('.pacha-dialogue p').textContent='钢珠往下沉时，水还在往上托它吗？小船安静浮着时呢？';
-  q('#answer-water').placeholder='地球会……水会……钢珠下沉时……';
+  const questionPanel=q('#quest-water [data-panel="question"]');
+  questionPanel.querySelector('.pacha-dialogue p').textContent='小钢珠沉到底了，我们坐的船却还浮着！你能用自己的话告诉我为什么吗？还不知道也没关系，我们一起找答案。';
+  questionPanel.querySelector('[data-phase="teach"]').textContent='我来讲给你听';
+  finalPanel.querySelector('.pacha-dialogue p').textContent='我想听听你的想法！不用背答案，也不用先看完视频；还没想明白，我们就一起找线索。';
+  q('#answer-water').placeholder='我觉得钢珠沉下去是因为……船能浮着是因为……';
   const reviewLabels=finalPanel.querySelectorAll('fieldset label');
   ['地球往下拉物体，这个力叫重力。','水往上托物体，这个力叫浮力；钢珠下沉时也有。','钢珠下沉时向下的力更大；船静浮时上下两股力平衡。'].forEach((text,i)=>reviewLabels[i].lastChild.textContent=' '+text);
   function diagram(index){
