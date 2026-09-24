@@ -9,7 +9,7 @@
     garden:{phase:'story',discovered:false,learned:false,submitted:false,completed:false,answer:''}
   }};
   const titles = {water:'游船公园',garden:'帕恰的小花园'};
-  const questions = {water:'钢珠沉下去了，钢铁做的船为什么却能浮在水面上？',garden:'小植物一直在喝水，为什么躲在黑暗里还是长不好？'};
+  const questions = {water:'地球往哪边拉？水往哪边托？我们先认识这两个小秘密吧！',garden:'小植物一直在喝水，为什么躲在黑暗里还是长不好？'};
   const rewards = {water:{food:3,snack:2,toy:0},garden:{food:2,snack:1,toy:1}};
   const items = {food:{icon:'🥣',name:'狗粮',desc:'冒险回来，吃一顿香香的饭。',action:'回家喂一份'},snack:{icon:'🍪',name:'小鱼饼',desc:'送给帕恰的小惊喜。',action:'回家喂一块'},toy:{icon:'🎾',name:'探险网球',desc:'花园冒险的纪念品，可以反复玩。',action:'回家一起玩'}};
   let toastTimer, clip=0, playRequest=0;
@@ -97,12 +97,19 @@
     if(id==='water'&&state.lessons.water.phase==='story')playFilm();
   }
   function discover(id){state.lessons[id].discovered=true;setPhase(id,'question');}
-  function learned(id){state.lessons[id].learned=true;q(`#${id}LearnStatus`).textContent='✓ 找到新线索了，记得讲出你的理由。';}
+  const beginnerDone = new Set();
+  document.addEventListener('pacha:beginner-complete',e=>{
+    const id=e.detail;
+    if(!Number.isInteger(id)||id<0||id>2||beginnerDone.has(id)||beginnerDone.size!==id)return;
+    beginnerDone.add(id);state.bag.snack++;renderInventory();tell('小发现奖励：小鱼饼 +1，已放进背包');
+    if(beginnerDone.size===3)learned('water');
+  });
+  function learned(id){if(id==='water'&&beginnerDone.size!==3)return;state.lessons[id].learned=true;q(`#${id}LearnStatus`).textContent='✓ 找到新线索了，记得讲出你的理由。';}
   function reviewExplanation(id,text){
     const lesson=state.lessons[id];const reply=q(`#reply-${id}`);reply.hidden=false;
     lesson.answer=text;lesson.submitted=false;q(`#review-${id}`).hidden=true;
     if(!text.trim()){reply.textContent='帕恰还没听到你的想法，慢慢说也没关系。';return;}
-    if(!lesson.learned){reply.textContent='我先把你的想法留在这里。我们去做一次探索，看看你的解释能不能和观察对上，再回来补充吧。';return;}
+    if(!lesson.learned){reply.textContent=id==='water'?'我先把你的想法留在这里。去“找答案”完成重力、浮力、沉与浮三个小发现，再回来教我吧。':'我先把你的想法留在这里。我们去做一次探索，看看你的解释能不能和观察对上，再回来补充吧。';return;}
     if(lesson.completed){reply.textContent='你的补充已经留在这次对话里。奖励领过啦，可以继续探索，也可以回家玩。';return;}
     lesson.submitted=true;q(`#echo-${id}`).textContent=text;q(`#review-${id}`).hidden=false;q(`[data-review="${id}"]`).reset();
     reply.textContent='我听到你的想法啦！这一版还不能用 AI 理解你的回答，请陪伴的大人和你一起核对。';
