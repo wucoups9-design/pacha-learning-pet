@@ -5,7 +5,7 @@ const petZone = $('.pet-zone');
 let stage = 1;
 let replyTimer;
 
-function setPetState(state = 'idle', duration = 0) { petZone.classList.remove('is-listening', 'is-happy', 'is-thinking', 'is-worried', 'is-running', 'is-cuddly', 'is-playing'); if (state !== 'idle') petZone.classList.add(`is-${state}`); clearTimeout(setPetState.timer); if (duration) setPetState.timer = setTimeout(() => setPetState('idle'), duration); }
+function setPetState(state = 'idle', duration = 0) { window.doudouCompanion?.react(state, duration); }
 
 const replyMap = {
   empty: { text: '“里面是空心的”是一个重要线索！可是，水是怎样托住船的呢？你能讲讲水对船产生了什么力吗？', mood: '我在认真听！水是怎么帮忙的呢？', stage: 2 },
