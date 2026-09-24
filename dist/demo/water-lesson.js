@@ -7,8 +7,8 @@
   adventure.innerHTML = `
     <ol class="water-steps" aria-label="探索进度"><li aria-current="step">1 一起玩</li><li>2 试着解释</li><li>3 按需学一学</li><li>4 再教帕恰</li></ol>
     <div class="water-heading"><div><label>水上探险 · 公园里的小发现</label><h2>帕恰的公园游船</h2></div><span>一起看故事，再把发现讲给它听</span></div>
-    <div class="park-film"><video id="parkFilm" controls playsinline muted preload="auto" poster="../assets/video/pacha-park-poster-v1.jpg" aria-label="帕恰的公园游船，静音故事短片" aria-describedby="filmNote"><source src="../assets/video/pacha-park-story-v1.mp4" type="video/mp4"><track kind="captions" src="../assets/video/pacha-park-story-v1.vtt" srclang="zh" label="中文字幕">你的浏览器暂不支持视频，可以阅读下方剧情。</video></div>
-    <div class="film-meta"><span>约 23 秒 · AI 故事短片 · 静音字幕版</span><span id="filmClock">00:00 / 00:23</span></div>
+    <div class="park-film"><video id="parkFilm" controls playsinline preload="auto" poster="../assets/video/pacha-park-poster-v2.jpg" aria-label="帕恰的公园游船，原声字幕版" aria-describedby="filmNote"><source src="../assets/video/pacha-park-story-v2.mp4" type="video/mp4">你的浏览器暂不支持视频，可以阅读下方剧情。</video></div>
+    <div class="film-meta"><span>约 20 秒 · AI 故事短片 · 原声字幕版</span><span id="filmClock">00:00 / 00:20</span></div>
     <p id="filmStatus" role="status" hidden></p>
     <small id="filmNote">帕恰在船内的观察水箱里做实验，不向湖里丢东西。画面为 AI 生成，钢制船是故事设定。</small>
     <div class="water-scene" id="waterScene" data-phase="0">
@@ -39,7 +39,7 @@
   // The scientific diagram remains available as a learning resource, not the story opening.
   q('#resourceAnimation').prepend(q('#waterScene'));
   const film = q('#parkFilm');
-  film.muted = true;
+  film.muted = false;
   const check = document.createElement('section'); check.className = 'lesson-check'; check.id = 'lessonCheck'; check.hidden = true;
   check.innerHTML = `<h3>帕恰：让我试着用一用！</h3><p>你刚才这样教我：</p><blockquote id="explanationEcho"></blockquote><p>帮我检查下面三个想法，看看我有没有弄混。</p><form id="waterCheckForm">
     <label for="checkSteel">① 钢珠已经在下沉，它还受到浮力吗？</label><select id="checkSteel" required><option value="">选一个想法</option><option value="none">不受浮力，因为它在下沉</option><option value="yes">受到浮力，但浮力小于它的重量</option></select>
@@ -70,28 +70,17 @@
   q('#width').setAttribute('aria-label','船体宽度，刻度每格为 0.1 厘米'); q('#cargo').setAttribute('aria-label','货物份数，每份 15 克'); updateBoat();
   let discovered = false, completed = false, clip = 0, questionShown = false, playRequest = 0;
   const question = '帕恰：钢珠会沉，钢铁做的船为什么能浮？你能教教我吗？';
-  const filmCues = [
-    [0, '帕恰：今天，我们坐小船游公园！'],
-    [4.5, '帕恰：看，我带来了一颗钢珠。'],
-    [6.5, '帕恰：把它放进船上的观察水箱，会怎样呢？'],
-    [9.5, '帕恰：扑通！钢珠落进水里了。'],
-    [11.5, '帕恰：它沉下去，停在箱底了！'],
-    [14.167, '帕恰：咦？我们的小船却还浮在水面上。'],
-    [17.667, question]
-  ];
   function step(n) { adventure.querySelectorAll('.water-steps li').forEach((el,i) => i === n-1 ? el.setAttribute('aria-current','step') : el.removeAttribute('aria-current')); }
   function scene(n) { q('#waterScene').dataset.phase=String(n); }
   function syncFilm() {
     const time = film.currentTime || 0;
-    const cue = filmCues.filter(([start]) => time >= start).at(-1);
-    if (!questionShown) q('#waterCaption').textContent=cue[1];
     const clock = value => `00:${String(Math.floor(value)).padStart(2,'0')}`;
-    q('#filmClock').textContent=`${clock(time)} / ${clock(Number.isFinite(film.duration) ? film.duration : 23)}`;
+    q('#filmClock').textContent=`${clock(time)} / ${clock(Number.isFinite(film.duration) ? film.duration : 20)}`;
   }
   function askQuestion() {
     stopStory();
     if (!questionShown) message(question.replace('帕恰：',''));
-    questionShown=true; discovered=true; q('#waterCaption').textContent=question;
+    questionShown=true; discovered=true; q('#waterCaption').hidden=false; q('#waterCaption').textContent=question;
     q('#waterChoices').hidden=false; q('#start').classList.remove('hide');
     step(2); progress(2); q('#progressHint').textContent='帕恰发现了问题，先说说你的想法';
     setPetState('thinking',1800);
@@ -100,13 +89,13 @@
     const request = ++playRequest;
     q('#filmStatus').hidden=true;
     try { await film.play(); if (request !== playRequest) film.pause(); }
-    catch (error) { if (request !== playRequest) return; q('#filmStatus').hidden=false; q('#filmStatus').textContent=film.error?'视频暂时没加载成功，可以重播重试，或阅读文字剧情后直接看问题。':'点击“播放故事”即可继续观看。'; q('#waterPause').textContent='播放故事'; }
+    catch (error) { if (request !== playRequest) return; q('#filmStatus').hidden=false; q('#filmStatus').textContent=film.error?'视频暂时没加载成功，可以重播重试，或阅读文字剧情后直接看问题。':'浏览器需要你点一下才能播放声音。点击“有声播放”，原声和字幕都会保留。'; q('#waterPause').textContent='有声播放'; }
   }
   function play(scroll = true) {
     stopStory(); questionShown=false; film.currentTime=0;
     if (film.error) film.load();
     q('#waterLearning').hidden=true; q('#waterNext').hidden=false; q('#waterPause').hidden=false;
-    q('#waterChoices').hidden=true; q('#waterPause').textContent='播放故事'; step(1); syncFilm();
+    q('#waterChoices').hidden=true; q('#waterCaption').hidden=true; q('#waterPause').textContent='有声播放'; step(1); syncFilm();
     if (!document.hidden && !(scroll === false && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) resumeFilm();
     if(scroll !== false) adventure.scrollIntoView({behavior:'smooth',block:'start'});
   }
