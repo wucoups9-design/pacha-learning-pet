@@ -6,7 +6,11 @@
   adventure.setAttribute('aria-label', '和帕恰一起玩水');
   adventure.innerHTML = `
     <ol class="water-steps" aria-label="探索进度"><li aria-current="step">1 一起玩</li><li>2 试着解释</li><li>3 按需学一学</li><li>4 再教帕恰</li></ol>
-    <div class="water-heading"><div><label>水上探险 · 今天一起玩什么？</label><h2>帕恰的小船，出发！</h2></div><span>不会也没关系，我们一起找答案</span></div>
+    <div class="water-heading"><div><label>水上探险 · 公园里的小发现</label><h2>帕恰的公园游船</h2></div><span>一起看故事，再把发现讲给它听</span></div>
+    <div class="park-film"><video id="parkFilm" controls playsinline muted preload="auto" poster="../assets/video/pacha-park-poster-v1.jpg" aria-label="帕恰的公园游船，静音故事短片" aria-describedby="filmNote"><source src="../assets/video/pacha-park-story-v1.mp4" type="video/mp4"><track kind="captions" src="../assets/video/pacha-park-story-v1.vtt" srclang="zh" label="中文字幕">你的浏览器暂不支持视频，可以阅读下方剧情。</video></div>
+    <div class="film-meta"><span>约 23 秒 · AI 故事短片 · 静音字幕版</span><span id="filmClock">00:00 / 00:23</span></div>
+    <p id="filmStatus" role="status" hidden></p>
+    <small id="filmNote">帕恰在船内的观察水箱里做实验，不向湖里丢东西。画面为 AI 生成，钢制船是故事设定。</small>
     <div class="water-scene" id="waterScene" data-phase="0">
       <svg viewBox="0 0 520 285" role="img" aria-labelledby="waterDiagramTitle waterDiagramDesc"><title id="waterDiagramTitle">钢珠和空心钢船的沉浮示意</title><desc id="waterDiagramDesc">按开始后，实心钢珠沉入水底，空心船停在水面。图形是剖面示意，不按比例。</desc>
         <path d="M15 110H505V265H15Z" fill="#b3deef"/><path d="M15 110H505" stroke="#398bb2" stroke-width="3"/><text x="22" y="101">水面</text>
@@ -18,7 +22,8 @@
       </svg><div class="lesson-dog" role="img" aria-label="帕恰在旁边观察"></div>
     </div>
     <p id="waterCaption" class="water-caption" aria-live="polite">帕恰：带上钢珠和小船，我们来玩水吧！你猜，放进水里会发生什么？</p>
-    <div class="water-actions"><button class="primary" id="waterPlay">和帕恰一起放入水中</button><button id="waterNext" hidden>下一幕</button><button id="waterPause" hidden>暂停</button></div>
+    <div class="water-actions"><button class="primary" id="waterPlay">重播小故事</button><button id="waterPause">播放故事</button><button id="waterNext">直接看问题</button></div>
+    <details class="film-transcript"><summary>阅读文字剧情</summary><p>我们带帕恰到公园坐船。帕恰拿起一颗钢珠，在船内把它放进透明观察水箱。钢珠落入水中，一直沉到箱底。帕恰抬头看看仍然浮着的船，问：“钢珠会沉，钢铁做的船为什么能浮？你能教教我吗？”</p></details>
     <div class="water-actions" id="waterChoices" hidden><button class="primary" id="waterTry">我先试着解释</button><button id="waterHelp">还不会，一起学一学</button></div>
     <div class="water-learning" id="waterLearning" hidden>
       <h2>选一种方式，和帕恰找答案</h2><p>不用全做。弄明白后，回来用自己的话告诉帕恰。</p>
@@ -31,6 +36,10 @@
       <div class="water-actions"><button class="primary" id="waterReturn">我有新想法了，回去教帕恰</button></div>
     </div>`;
   q('#pet').before(adventure);
+  // The scientific diagram remains available as a learning resource, not the story opening.
+  q('#resourceAnimation').prepend(q('#waterScene'));
+  const film = q('#parkFilm');
+  film.muted = true;
   const check = document.createElement('section'); check.className = 'lesson-check'; check.id = 'lessonCheck'; check.hidden = true;
   check.innerHTML = `<h3>帕恰：让我试着用一用！</h3><p>你刚才这样教我：</p><blockquote id="explanationEcho"></blockquote><p>帮我检查下面三个想法，看看我有没有弄混。</p><form id="waterCheckForm">
     <label for="checkSteel">① 钢珠已经在下沉，它还受到浮力吗？</label><select id="checkSteel" required><option value="">选一个想法</option><option value="none">不受浮力，因为它在下沉</option><option value="yes">受到浮力，但浮力小于它的重量</option></select>
@@ -41,7 +50,7 @@
   q('.card-title h2').textContent = '帕恰有个问题想问你';
   q('.chat-head h3').textContent = '把你的发现讲给帕恰听';
   q('#chat').replaceChildren();
-  message('今天我们去玩小船吧！一起看看钢珠和小船入水后，会发生什么。你随时可以暂停或重播。');
+  message('今天我们去公园坐船！先陪我看一段小故事，你随时可以暂停或重播。');
   q('#start').classList.add('hide');
   q('#teach').textContent = '我先试着解释'; q('#hint').textContent = '还不会，一起学'; q('#play').textContent = '再玩一次小船';
   q('.chips').replaceChildren();
@@ -59,19 +68,49 @@
   q('#lab .lab-head span').textContent = '理想模型 · 不按比例';
   const modelNote = document.createElement('p'); modelNote.className='model-note'; modelNote.textContent='模型设定：淡水中，船长 10 cm、深 2 cm、空船质量固定为 20 g，每份货物 15 g。忽略倾覆、变形和船壁厚度；改变宽度时保持空船质量不变。结果仅用于理解承载，不代表真实船只安全标准。'; q('#lab').appendChild(modelNote);
   q('#width').setAttribute('aria-label','船体宽度，刻度每格为 0.1 厘米'); q('#cargo').setAttribute('aria-label','货物份数，每份 15 克'); updateBoat();
-  let phase = 0, discovered = false, completed = false, paused = false, timer, clip = 0;
-  const captions = [
-    '帕恰：我拿钢珠，你拿小船！先猜一猜，它们会停在哪里？',
-    '帕恰：咕咚！钢珠一路沉到水底了……我们再把小船放进去。',
-    '帕恰：咦，小船停在水面上了！它也是钢铁做的呀。',
-    '帕恰：为什么钢珠沉下去了，钢铁做的轮船却浮在水面上？你能教教我吗？'
+  let discovered = false, completed = false, clip = 0, questionShown = false, playRequest = 0;
+  const question = '帕恰：钢珠会沉，钢铁做的船为什么能浮？你能教教我吗？';
+  const filmCues = [
+    [0, '帕恰：今天，我们坐小船游公园！'],
+    [4.5, '帕恰：看，我带来了一颗钢珠。'],
+    [6.5, '帕恰：把它放进船上的观察水箱，会怎样呢？'],
+    [9.5, '帕恰：扑通！钢珠落进水里了。'],
+    [11.5, '帕恰：它沉下去，停在箱底了！'],
+    [14.167, '帕恰：咦？我们的小船却还浮在水面上。'],
+    [17.667, question]
   ];
   function step(n) { adventure.querySelectorAll('.water-steps li').forEach((el,i) => i === n-1 ? el.setAttribute('aria-current','step') : el.removeAttribute('aria-current')); }
-  function scene(n) { phase=n; q('#waterScene').dataset.phase=String(n); q('#waterCaption').textContent=captions[n]; }
-  function schedule() { clearTimeout(timer); if (!paused && phase<3) timer=setTimeout(next, 2400); }
-  function next() { clearTimeout(timer); if(phase>=3) return; scene(phase+1); setPetState(phase===1?'listening':'thinking',1800); if(phase===3) { discovered=true; q('#waterChoices').hidden=false; q('#start').classList.remove('hide'); q('#waterNext').hidden=true; q('#waterPause').hidden=true; q('#waterPlay').textContent='重播发现过程'; message(captions[3].replace('帕恰：','')); step(2); progress(2); q('#progressHint').textContent='帕恰发现了问题，先说说你的想法'; } else schedule(); }
-  function play(scroll = true) { clearTimeout(timer); paused=document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches; scene(0); q('#waterPlay').textContent='重播发现过程'; q('#waterLearning').hidden=true; q('#waterScene').classList.remove('is-explaining'); q('#waterNext').hidden=false; q('#waterPause').hidden=false; q('#waterPause').textContent=paused?'继续播放':'暂停'; q('#waterChoices').hidden=true; step(1); schedule(); if(scroll !== false) adventure.scrollIntoView({behavior:'smooth',block:'start'}); }
-  function stopStory() { clearTimeout(timer); q('#waterNext').hidden=true; q('#waterPause').hidden=true; }
+  function scene(n) { q('#waterScene').dataset.phase=String(n); }
+  function syncFilm() {
+    const time = film.currentTime || 0;
+    const cue = filmCues.filter(([start]) => time >= start).at(-1);
+    if (!questionShown) q('#waterCaption').textContent=cue[1];
+    const clock = value => `00:${String(Math.floor(value)).padStart(2,'0')}`;
+    q('#filmClock').textContent=`${clock(time)} / ${clock(Number.isFinite(film.duration) ? film.duration : 23)}`;
+  }
+  function askQuestion() {
+    stopStory();
+    if (!questionShown) message(question.replace('帕恰：',''));
+    questionShown=true; discovered=true; q('#waterCaption').textContent=question;
+    q('#waterChoices').hidden=false; q('#start').classList.remove('hide');
+    step(2); progress(2); q('#progressHint').textContent='帕恰发现了问题，先说说你的想法';
+    setPetState('thinking',1800);
+  }
+  async function resumeFilm() {
+    const request = ++playRequest;
+    q('#filmStatus').hidden=true;
+    try { await film.play(); if (request !== playRequest) film.pause(); }
+    catch (error) { if (request !== playRequest) return; q('#filmStatus').hidden=false; q('#filmStatus').textContent=film.error?'视频暂时没加载成功，可以重播重试，或阅读文字剧情后直接看问题。':'点击“播放故事”即可继续观看。'; q('#waterPause').textContent='播放故事'; }
+  }
+  function play(scroll = true) {
+    stopStory(); questionShown=false; film.currentTime=0;
+    if (film.error) film.load();
+    q('#waterLearning').hidden=true; q('#waterNext').hidden=false; q('#waterPause').hidden=false;
+    q('#waterChoices').hidden=true; q('#waterPause').textContent='播放故事'; step(1); syncFilm();
+    if (!document.hidden && !(scroll === false && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) resumeFilm();
+    if(scroll !== false) adventure.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function stopStory() { ++playRequest; film.pause(); q('#waterNext').hidden=true; q('#waterPause').hidden=true; }
   function tryExplain() { if(!discovered) { play(); return; } stopStory(); scene(3); q('#start').classList.add('hide'); q('#composer').classList.remove('hide'); q('#waterLearning').hidden=true; q('#waterScene').classList.remove('is-explaining'); step(2); q('#input').placeholder='钢珠……；小船……。我觉得这是因为……'; q('#pet').scrollIntoView({behavior:'smooth',block:'start'}); q('#input').focus({preventScroll:true}); setPetState('listening'); }
   function learn() { if(!discovered) { play(); return; } stopStory(); step(3); q('#waterLearning').hidden=false; showResource('animation'); q('#waterLearning').scrollIntoView({behavior:'smooth',block:'start'}); setPetState('thinking'); }
   const clips = [
@@ -79,18 +118,23 @@
     '再看空心船：船连同内部空气占的空间更大，可以排开足够多的水。蓝色区域就是被船挤开的位置。排开水的重量，等于浮力大小。',
     '船静静浮着时，浮力刚好托住船和货物的总重量。加太多货物或让水进入船舱，船也可能沉下去。不是“空心就一定浮”哦！'
   ];
-  function showClip() { q('#clipText').textContent=clips[clip]; q('#clipPage').textContent=`${clip+1} / 3`; q('#clipProgress').value=clip+1; q('#clipPrev').disabled=clip===0; q('#clipNext').disabled=clip===2; scene(clip===0?1:2); q('#waterScene').classList.toggle('is-explaining',clip>0); q('#waterCaption').textContent=clips[clip]; }
+  function showClip() { q('#clipText').textContent=clips[clip]; q('#clipPage').textContent=`${clip+1} / 3`; q('#clipProgress').value=clip+1; q('#clipPrev').disabled=clip===0; q('#clipNext').disabled=clip===2; scene(clip===0?1:2); q('#waterScene').classList.toggle('is-explaining',clip>0); }
   function showResource(name) { ['animation','experiment','reading'].forEach(n=>{q('#resource'+n[0].toUpperCase()+n.slice(1)).hidden=n!==name; q(`[data-resource="${n}"]`).setAttribute('aria-pressed',String(n===name));}); if(name==='animation') showClip(); }
   function explain(text) { if(!discovered) return; if(/^(我还不会|我不会|不知道|不懂|我需要一点提示|给我提示)[。！!？?\s]*$/.test(text)) {message('没关系，我们一起找答案。看动画、做实验或读一读，任选一种就好。'); learn();return;} if(text.trim().length<6) { message('再多讲一点好吗？比如钢珠和小船有什么不同，水又做了什么。不会也可以点“去学习”。'); return; } q('#explanationEcho').textContent=text; check.hidden=false; q('#checkFeedback').textContent='先完成三个追问；如果发现解释还不完整，可以补充后再发送。'; if(!completed) q('#waterCheckForm').reset(); step(4); progress(3); q('#progressHint').textContent='你已经解释了自己的想法，再帮帕恰检查三个问题'; message('我收到你的解释啦！下面有三个想法，我想请你帮我检查，尤其是“再加很多货物”会怎样。'); setPetState('thinking'); check.scrollIntoView({behavior:'smooth',block:'center'}); }
-  q('#waterPlay').addEventListener('click',play); q('#waterNext').addEventListener('click',next);
-  q('#waterPause').addEventListener('click',()=>{paused=!paused;q('#waterPause').textContent=paused?'继续播放':'暂停';if(paused)clearTimeout(timer);else schedule();});
+  q('#waterPlay').addEventListener('click',play); q('#waterNext').addEventListener('click',askQuestion);
+  q('#waterPause').addEventListener('click',()=>{if(film.paused) resumeFilm();else {++playRequest;film.pause();}});
+  film.addEventListener('timeupdate',syncFilm); film.addEventListener('loadedmetadata',syncFilm);
+  film.addEventListener('ended',askQuestion);
+  film.addEventListener('play',()=>{questionShown=false;q('#waterPause').hidden=false;q('#waterPause').textContent='暂停';q('#filmStatus').hidden=true;});
+  film.addEventListener('pause',()=>{q('#waterPause').textContent='继续播放';});
+  film.addEventListener('error',()=>{q('#filmStatus').hidden=false;q('#filmStatus').textContent='视频暂时没加载成功。可以重播重试，或阅读文字剧情后直接看问题。';});
   q('#waterTry').addEventListener('click',tryExplain); q('#waterHelp').addEventListener('click',learn); help.addEventListener('click',learn); q('#checkHelp').addEventListener('click',learn);
   q('#waterReturn').addEventListener('click',()=>{tryExplain();step(4);message('你有新发现了吗？这次可以用自己的话，把“形状”和“水的托举”连起来讲给我听。');});
   document.querySelectorAll('[data-resource]').forEach(b=>b.addEventListener('click',()=>showResource(b.dataset.resource)));
   q('#clipPrev').addEventListener('click',()=>{clip=Math.max(0,clip-1);showClip();}); q('#clipNext').addEventListener('click',()=>{clip=Math.min(2,clip+1);showClip();});
   q('#waterTrial').addEventListener('submit',e=>{e.preventDefault();const form=new FormData(e.currentTarget); const observed=form.get('observation'); const responses={contrast:'你观察到船浮、小团沉。材料和质量没有变，变的是形状和可以排开水的体积。',bothFloat:'两个都浮也是观察结果！小团里可能还有空气，或受水面张力影响；请大人帮你压紧，再试一次。',other:'先检查船有没有破洞、船边是否进水，以及小团是否压紧。记录真实结果，再换一种学习方式对照。'};q('#trialResult').textContent=`你预测小船会${form.get('prediction')==='float'?'浮着':'下沉'}。${responses[observed]}`;setPetState('listening');});
   q('#waterCheckForm').addEventListener('submit',e=>{e.preventDefault();const missing=[];if(q('#checkSteel').value!=='yes')missing.push('想想：下沉的钢珠也受水的托举，只是还不够。');if(q('#checkBoat').value!=='displace')missing.push('空心不是魔法：关键是能排开足够多的水，托住总重量。');if(q('#checkCargo').value!=='limit')missing.push('小船有承载限度，不会装多少都浮着。');if(missing.length){q('#checkFeedback').textContent=missing.join(' ')+' 可以回去学习，再改一改。';setPetState('thinking');return;}q('#checkFeedback').textContent='三个追问都解释通啦！你还可以对照刚才的话，补充你新发现的理由。';if(!completed){completed=true;progress(4);q('#progressHint').textContent='完成自己的解释和三个追问';q('#reward').classList.remove('hide');q('#memory').classList.remove('hide');message('现在我知道了：钢珠也受浮力；空心船可以排开足够的水托住总重量；装太多或进水也可能沉！谢谢你陪我找答案。');setPetState('happy',1800);notify('探索完成，获得一块小鱼饼');q('#reward').scrollIntoView({behavior:'smooth',block:'center'});}});
-  document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(timer);paused=true;q('#waterPause').textContent='继续播放';}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){++playRequest;film.pause();}});
   window.waterLesson={play,tryExplain,learn,explain}; showClip(); scene(0);q('#waterScene').classList.remove('is-explaining');
   // Start the introduction once, without moving focus or scrolling the page.
   play(false);
