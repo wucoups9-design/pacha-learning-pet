@@ -41,7 +41,7 @@
   q('.card-title h2').textContent = '帕恰有个问题想问你';
   q('.chat-head h3').textContent = '把你的发现讲给帕恰听';
   q('#chat').replaceChildren();
-  message('今天我们去玩小船吧！先点上面的“和帕恰一起放入水中”，看看会发生什么。');
+  message('今天我们去玩小船吧！一起看看钢珠和小船入水后，会发生什么。你随时可以暂停或重播。');
   q('#start').classList.add('hide');
   q('#teach').textContent = '我先试着解释'; q('#hint').textContent = '还不会，一起学'; q('#play').textContent = '再玩一次小船';
   q('.chips').replaceChildren();
@@ -70,7 +70,7 @@
   function scene(n) { phase=n; q('#waterScene').dataset.phase=String(n); q('#waterCaption').textContent=captions[n]; }
   function schedule() { clearTimeout(timer); if (!paused && phase<3) timer=setTimeout(next, 2400); }
   function next() { clearTimeout(timer); if(phase>=3) return; scene(phase+1); setPetState(phase===1?'listening':'thinking',1800); if(phase===3) { discovered=true; q('#waterChoices').hidden=false; q('#start').classList.remove('hide'); q('#waterNext').hidden=true; q('#waterPause').hidden=true; q('#waterPlay').textContent='重播发现过程'; message(captions[3].replace('帕恰：','')); step(2); progress(2); q('#progressHint').textContent='帕恰发现了问题，先说说你的想法'; } else schedule(); }
-  function play() { clearTimeout(timer); paused=window.matchMedia('(prefers-reduced-motion: reduce)').matches; scene(0); q('#waterLearning').hidden=true; q('#waterScene').classList.remove('is-explaining'); q('#waterNext').hidden=false; q('#waterPause').hidden=false; q('#waterPause').textContent=paused?'继续播放':'暂停'; q('#waterChoices').hidden=true; step(1); schedule(); adventure.scrollIntoView({behavior:'smooth',block:'start'}); }
+  function play(scroll = true) { clearTimeout(timer); paused=document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches; scene(0); q('#waterPlay').textContent='重播发现过程'; q('#waterLearning').hidden=true; q('#waterScene').classList.remove('is-explaining'); q('#waterNext').hidden=false; q('#waterPause').hidden=false; q('#waterPause').textContent=paused?'继续播放':'暂停'; q('#waterChoices').hidden=true; step(1); schedule(); if(scroll !== false) adventure.scrollIntoView({behavior:'smooth',block:'start'}); }
   function stopStory() { clearTimeout(timer); q('#waterNext').hidden=true; q('#waterPause').hidden=true; }
   function tryExplain() { if(!discovered) { play(); return; } stopStory(); scene(3); q('#start').classList.add('hide'); q('#composer').classList.remove('hide'); q('#waterLearning').hidden=true; q('#waterScene').classList.remove('is-explaining'); step(2); q('#input').placeholder='钢珠……；小船……。我觉得这是因为……'; q('#pet').scrollIntoView({behavior:'smooth',block:'start'}); q('#input').focus({preventScroll:true}); setPetState('listening'); }
   function learn() { if(!discovered) { play(); return; } stopStory(); step(3); q('#waterLearning').hidden=false; showResource('animation'); q('#waterLearning').scrollIntoView({behavior:'smooth',block:'start'}); setPetState('thinking'); }
@@ -92,4 +92,6 @@
   q('#waterCheckForm').addEventListener('submit',e=>{e.preventDefault();const missing=[];if(q('#checkSteel').value!=='yes')missing.push('想想：下沉的钢珠也受水的托举，只是还不够。');if(q('#checkBoat').value!=='displace')missing.push('空心不是魔法：关键是能排开足够多的水，托住总重量。');if(q('#checkCargo').value!=='limit')missing.push('小船有承载限度，不会装多少都浮着。');if(missing.length){q('#checkFeedback').textContent=missing.join(' ')+' 可以回去学习，再改一改。';setPetState('thinking');return;}q('#checkFeedback').textContent='三个追问都解释通啦！你还可以对照刚才的话，补充你新发现的理由。';if(!completed){completed=true;progress(4);q('#progressHint').textContent='完成自己的解释和三个追问';q('#reward').classList.remove('hide');q('#memory').classList.remove('hide');message('现在我知道了：钢珠也受浮力；空心船可以排开足够的水托住总重量；装太多或进水也可能沉！谢谢你陪我找答案。');setPetState('happy',1800);notify('探索完成，获得一块小鱼饼');q('#reward').scrollIntoView({behavior:'smooth',block:'center'});}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(timer);paused=true;q('#waterPause').textContent='继续播放';}});
   window.waterLesson={play,tryExplain,learn,explain}; showClip(); scene(0);q('#waterScene').classList.remove('is-explaining');
+  // Start the introduction once, without moving focus or scrolling the page.
+  play(false);
 })();
