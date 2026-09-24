@@ -4,7 +4,7 @@
   const panel=q('#quest-water [data-panel="learn"]');
   const levels=[
     {title:'重力：谁把小球往下拉？',question:'没有人推，小球为什么还会往下掉？',text:'松开手，小球就落下来了。地球会把身边的东西往下拉。这个力，叫重力。',hint:'能说出“地球把小球往下拉”就可以，不用背定义。',action:'松开小球，看一看',result:'小球落下来了！地球在往下拉它，这个力叫重力。',review:'孩子能用自己的话说出：地球把小球往下拉。',src:'../assets/video/pacha-gravity-v1.mp4',poster:'../assets/video/pacha-gravity-poster-v1.jpg'},
-    {title:'浮力：水往上托',question:'松开按在水里的空瓶子，谁在把它往上托？',text:'把拧紧瓶盖的空塑料瓶轻轻按进水里，你会感到水在往上托它。这个力，叫浮力。',hint:'能说出“水把瓶子往上托”就可以。不是瓶子自己跳起来。',action:'松开瓶子，看一看',result:'瓶子往上升，最后浮在水面。水会往上托，地球也仍在往下拉。',review:'孩子能说出水往上托瓶子，并知道地球仍在往下拉。',src:null},
+    {title:'浮力：谁把瓶子往上托？',question:'松开按在水里的空瓶子，谁在把它往上托？',text:'把拧紧瓶盖的空塑料瓶轻轻按进水里，你会感到水在往上托它。这个力，叫浮力。',hint:'能说出“水把瓶子往上托”就可以。不是瓶子自己跳起来。',action:'松开瓶子，看一看',result:'瓶子往上升，最后浮在水面。水会往上托，地球也仍在往下拉。静静浮着时，这两个力一样大。',review:'孩子能说出水往上托瓶子，并知道地球仍在往下拉。',src:'../assets/video/pacha-buoyancy-v1.mp4',poster:'../assets/video/pacha-buoyancy-poster-v1.jpg',duration:18},
     {title:'沉与浮：两股力一起看',question:'钢珠沉下去的时候，水还在往上托它吗？',text:'水里有两股力：地球往下拉，水往上托。钢珠往下沉时，水也在托它，只是托得不够。小船安静浮着时，上下两股力刚好平衡。',hint:'先讲“钢珠也被水托着，只是托得不够”。船的形状为什么有帮助，下次再探索。',action:'比较钢珠和小船',result:'钢珠：向下的力更大。静静浮着的小船：上下两股力一样大。不是“沉下去就没有浮力”。',review:'孩子能说出钢珠也受水的托举，并能指出静浮小船的两股力平衡。',src:null}
   ];
   const records=levels.map(()=>({observed:false,answer:'',submitted:false,done:false}));
@@ -39,10 +39,11 @@
       video.muted=false;
       const slot=video.parentElement;
       root.querySelector('.beginner-card h3').after(slot);
-      const note=document.createElement('small');note.textContent='约15秒 · 保留原声 · 点击播放，和帕恰一起观察';slot.append(note);
+      const note=document.createElement('small');note.textContent=`约${level.duration||15}秒 · 保留原声 · 点击播放，和帕恰一起观察`;slot.append(note);
+      if(current===1){const clarification=document.createElement('p');clarification.textContent='帕恰的小补充：视频说“浮力赢啦”，是在说瓶子松开后向上升。等瓶子静静浮在水面时，水往上托和地球往下拉一样大，不是谁一直赢哦。';slot.append(clarification);}
       const error=document.createElement('p');error.hidden=true;error.setAttribute('role','status');slot.append(error);
       video.addEventListener('error',()=>{error.hidden=false;error.textContent='视频暂时打不开，可以先用下面的互动图解继续。';});
-      video.addEventListener('ended',()=>{record.observed=true;q('#beginnerObservation').hidden=false;q('#beginnerReply').textContent='你看到小球落下来了！现在试着用自己的话告诉帕恰，谁在往下拉它。';});
+      video.addEventListener('ended',()=>{record.observed=true;q('#beginnerObservation').hidden=false;q('#beginnerReply').textContent=current===1?'你看到瓶子浮上来了！现在试着用自己的话告诉帕恰，谁在把瓶子往上托。':'你看到小球落下来了！现在试着用自己的话告诉帕恰，谁在往下拉它。';});
     }
     q('#beginnerWords').value=record.answer;
     root.querySelectorAll('[data-beginner]').forEach(b=>b.addEventListener('click',()=>{saveDraft();current=Number(b.dataset.beginner);render();}));
