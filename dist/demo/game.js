@@ -76,13 +76,18 @@
   const film=q('#parkFilm');film.muted=false;
   function setPhase(id,phase){
     const lesson=state.lessons[id];
-    if(!phaseNames[phase]||(!lesson.discovered&&phase!=='story'))return;
+    if((!phaseNames[phase]&&!(id==='water'&&['boat','follow'].includes(phase)))||(!lesson.discovered&&phase!=='story'))return;
+    if(id==='water'&&phase==='follow'&&!window.pachaParkAdventure?.canFollow())return;
+    if(id==='water'&&phase==='boat'&&!window.pachaParkAdventure?.canBoat())return;
     lesson.phase=phase;
     if(phase!=='story'){++playRequest;film.pause();}
     qa(`#quest-${id} [data-panel]`).forEach(p=>p.hidden=p.dataset.panel!==phase);
-    qa(`#quest-${id} .quest-steps button`).forEach(b=>{b.disabled=!lesson.discovered&&b.dataset.phase!=='story';if(b.dataset.phase===phase)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+    qa(`#quest-${id} .quest-steps button`).forEach(b=>{b.disabled=(!lesson.discovered&&b.dataset.phase!=='story')||(id==='water'&&b.dataset.phase==='boat'&&!window.pachaParkAdventure?.canBoat())||(id==='water'&&b.dataset.phase==='follow'&&!window.pachaParkAdventure?.canFollow());if(b.dataset.phase===phase)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
     q('#adventureTitle').textContent=phase==='story'?'和帕恰一起玩':phase==='question'?'咦，怎么会这样？':phase==='learn'?'一起寻找小秘密':'轮到你当小老师啦';
     if(phase==='teach'){q(`#review-${id}`).hidden=!lesson.submitted||lesson.completed;q(`#done-${id}`).hidden=!lesson.completed;}
+    if(phase==='boat')q('#adventureTitle').textContent='帕恰的装船挑战';
+    if(phase==='follow')q('#adventureTitle').textContent='帕恰又有一个问题';
+    q('#adventureTitle').focus({preventScroll:true});
     window.scrollTo({top:0,behavior:'instant'});
   }
   async function playFilm(){
@@ -105,19 +110,22 @@
     if(beginnerDone.size===3)learned('water');
   });
   function learned(id){if(id==='water'&&beginnerDone.size!==3)return;state.lessons[id].learned=true;q(`#${id}LearnStatus`).textContent='✓ 找到新线索了，记得讲出你的理由。';}
-  function reviewExplanation(id,text){
+  function reviewExplanation(id,text,afterPark=false){
     const lesson=state.lessons[id];const reply=q(`#reply-${id}`);reply.hidden=false;
     lesson.answer=text;lesson.submitted=false;q(`#review-${id}`).hidden=true;
     if(!text.trim()){reply.textContent='帕恰还没听到你的想法，慢慢说也没关系。';return;}
     if(id!=='water'&&!lesson.learned){reply.textContent='我先把你的想法留在这里。我们去做一次探索，看看你的解释能不能和观察对上，再回来补充吧。';return;}
     if(lesson.completed){reply.textContent='你的补充已经留在这次对话里。奖励领过啦，可以继续探索，也可以回家玩。';return;}
+    if(id==='water'&&!afterPark){document.dispatchEvent(new CustomEvent('pacha:park-explanation',{detail:text}));return;}
     lesson.submitted=true;q(`#echo-${id}`).textContent=text;q(`#review-${id}`).hidden=false;q(`[data-review="${id}"]`).reset();
     reply.textContent='我听到你的想法啦！这一版还不能用 AI 理解你的回答，请陪伴的大人和你一起核对。';
   }
   function grantReward(id){
     const lesson=state.lessons[id];
     if(lesson.completed||(id!=='water'&&!lesson.learned)||!lesson.submitted||!lesson.answer.trim())return;
+    if(id==='water'&&!window.pachaParkAdventure?.canReward())return;
     lesson.completed=true;
+    if(id==='water')document.dispatchEvent(new Event('pacha:park-complete'));
     Object.entries(rewards[id]).forEach(([key,count])=>state.bag[key]+=count);
     renderInventory();q(`#review-${id}`).hidden=true;q(`#done-${id}`).hidden=false;
     q(`#reply-${id}`).textContent='陪伴者确认完成。这次一起找到的秘密，帕恰记住在本次冒险里啦！';
@@ -162,5 +170,6 @@
   q('#cluePrev').addEventListener('click',()=>{clip=Math.max(0,clip-1);showClue();});q('#clueNext').addEventListener('click',()=>{clip=Math.min(2,clip+1);showClue();});q('#readComplete').addEventListener('click',()=>{learned('water');setPhase('water','teach');});
   q('#realTrial').addEventListener('submit',e=>{e.preventDefault();learned('water');q('#trialReply').textContent=`你预测“${q('#prediction').value}”，观察到“${q('#observed').value}”。${q('#observed').value==='船浮、小团沉'?'材料和质量没有变，变化的是形状和排水体积。':'真实记录最重要。检查空气、破洞或进水情况，再和小船实验室的模型对照。'}`;});
   q('#gardenTrial').addEventListener('submit',e=>{e.preventDefault();const data=new FormData(e.currentTarget),bright=data.get('light')==='bright',enough=data.get('water')==='enough';q('#plantIcon').textContent=bright&&enough?'🌿':'🪴';q('#gardenObservation').textContent=`${bright?'合适的光照有助于绿色植物制造养分。':'长期缺少光照，绿色植物不能正常制造足够养分。'}${enough?'土壤保持适当湿润、能排水，有利于根部生长。':'长期积水会妨碍根部获取氧气，可能烂根。'}这些影响需要时间；不同植物还需要合适的温度等条件。`;learned('garden');});
+  window.pachaParkBridge={phase:phase=>setPhase('water',phase),review:text=>{setPhase('water','teach');reviewExplanation('water',text,true);}};
   showClue();renderInventory();pet('你来啦！先摸摸头，还是带我出门玩呀？','idle');
 })();
