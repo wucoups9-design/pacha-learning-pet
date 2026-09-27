@@ -4,6 +4,7 @@
   const q=s=>document.querySelector(s), bridge=window.pachaParkBridge;
   let explanation='', follow='', cargo=0, prediction='', lastCargo=-1;
   let seenFloat=false, seenSink=false, recovered=false, ready=false, complete=false;
+  const toyItems=[];
   const quest=q('#quest-water');
   const boat=document.createElement('section');boat.dataset.panel='boat';boat.hidden=true;boat.className='park-play';
   boat.innerHTML=`<span class="eyebrow">帕恰的装船挑战</span><h2 tabindex="-1">把玩具带去野餐吧！</h2><p>帕恰：我听到你的想法啦。我们试试，玩具装多了，小船会怎样？</p>
@@ -13,10 +14,7 @@
     <ul id="parkChecks" class="park-checks"></ul><button id="parkFollow" class="primary" disabled>听听帕恰的新问题 →</button>
     <button data-phase="learn" data-lesson="water">需要线索，一起找答案</button>
     <details><summary>给陪伴者：这是玩具船简化模型</summary><p>空船20克，每件玩具15克；固定最大排水量120克。小于120克时可静浮，达到或超过时视作可能进水下沉。忽略倾覆与波浪，不用于真实乘船安全判断。示意图不按比例。</p></details>`;
-  const diagram=q('#boatDiagram').cloneNode(true);diagram.id='parkDiagram';diagram.removeAttribute('aria-labelledby');diagram.setAttribute('aria-label','玩具船装载实验示意图');
-  diagram.querySelectorAll('[id]').forEach(el=>el.id='park-'+el.id);
-  const cargoIcons=document.createElementNS('http://www.w3.org/2000/svg','text');cargoIcons.id='parkToyIcons';cargoIcons.setAttribute('x','175');cargoIcons.setAttribute('y','66');cargoIcons.setAttribute('font-size','20');diagram.querySelector('#park-modelHull').append(cargoIcons);
-  boat.querySelector('#parkBoatDiagram').append(diagram);quest.append(boat);
+  boat.querySelector('#parkBoatDiagram').innerHTML=`<div class="park-lake" aria-label="帕恰陪你给玩具船装货"><span class="pacha-avatar lake-pacha" aria-hidden="true"></span><div class="lake-boat-position" id="parkBoatPosition"><div class="lake-boat"><img src="../assets/pets/park-toy-boat-v1.png" alt="蓝色星星玩具船"><div id="parkToyIcons" class="lake-toys" aria-label="船上的玩具"></div></div></div><span id="parkLakeCaption" class="lake-caption">选一件喜欢的玩具，装上船吧</span></div><div class="park-toy-tray" aria-label="挑选玩具"><button data-load-toy="🧸" aria-label="装一只小熊">🧸<small>小熊</small></button><button data-load-toy="⚽" aria-label="装一个皮球">⚽<small>皮球</small></button><button data-load-toy="🧩" aria-label="装一块积木">🧩<small>积木</small></button><button data-load-toy="🪀" aria-label="装一个悠悠球">🪀<small>悠悠球</small></button></div><small>每件玩具在这个游戏里都按15克计算。</small>`;quest.append(boat);
   const followPanel=document.createElement('section');followPanel.dataset.panel='follow';followPanel.hidden=true;followPanel.className='park-play';
   followPanel.innerHTML=`<div class="pacha-dialogue"><span class="pacha-avatar" aria-hidden="true"></span><div><small>帕恰又有一个想法</small><h2 tabindex="-1">船是空心的，就能一直装玩具吗？</h2><p>刚才你让小船重新浮起来了。如果我再塞满玩具，你会怎么提醒我？为什么？</p></div></div><p id="parkEvidence"></p><form id="parkFollowForm"><label for="parkFollowWords">用自己的话告诉帕恰</label><textarea id="parkFollowWords" required maxlength="800" rows="3" placeholder="我会提醒你……因为刚才我看到……"></textarea><button class="primary">讲给帕恰听</button><button type="button" data-phase="boat" data-lesson="water">再玩一次找线索</button></form><p>帕恰的追问是预设故事对话；尚未接入 AI，由陪伴者确认解释。</p>`;
   quest.append(followPanel);
@@ -33,16 +31,17 @@
   function draw(){
     q('#parkCargo').textContent=`${cargo} 件玩具 · 船和玩具共 ${20+cargo*15} 克`;
     q('#parkLess').disabled=cargo===0;q('#parkMore').disabled=cargo===9;
-    q('#park-modelCargo').style.opacity=cargo?'1':'0';
-    q('#parkToyIcons').textContent=['🧸','⚽','🧩','🪀','🧸','⚽','🧩','🪀','🧸'].slice(0,cargo).join('');
-    q('#park-modelCaption').textContent='装好后，先猜一猜';
-    q('#park-modelHull').style.transform='translateY(-20px)';
+    q('#parkToyIcons').replaceChildren(...toyItems.map(t=>{const s=document.createElement('span');s.textContent=t;return s;}));
+    q('#parkLakeCaption').textContent='装好后，先猜一猜';
+    q('#parkBoatPosition').style.transform='translateY(0)';
+    boat.querySelectorAll('[data-load-toy]').forEach(b=>b.disabled=cargo===9);
   }
   function checks(){
     q('#parkChecks').replaceChildren(...[[seenFloat,'观察小船浮着'],[seenSink,'观察装得太多'],[recovered,'拿下一些玩具，让小船重新浮起来']].map(([done,t])=>{const li=document.createElement('li');li.textContent=(done?'✓ ':'○ ')+t;return li;}));
     q('#parkFollow').disabled=!(seenFloat&&seenSink&&recovered);
   }
-  function change(n){cargo=Math.max(0,Math.min(9,cargo+n));prediction='';q('#parkLaunch').disabled=false;boat.querySelectorAll('input').forEach(i=>i.checked=false);q('#parkResult').textContent='条件变了，再猜一次，看看会发生什么。';draw();}
+  function change(n,icon='🧸'){if(n>0&&cargo<9)toyItems.push(icon);else if(n<0&&cargo>0)toyItems.pop();cargo=toyItems.length;prediction='';q('#parkLaunch').disabled=false;boat.querySelectorAll('input').forEach(i=>i.checked=false);q('#parkResult').textContent='条件变了，再猜一次，看看会发生什么。';draw();}
+  boat.querySelectorAll('[data-load-toy]').forEach(b=>b.onclick=()=>change(1,b.dataset.loadToy));
   q('#parkLess').onclick=()=>change(-1);q('#parkMore').onclick=()=>change(1);
   boat.querySelectorAll('input').forEach(i=>i.onchange=()=>prediction=i.value);
   q('#parkLaunch').onclick=()=>{
@@ -50,8 +49,8 @@
     const floats=20+cargo*15<120;
     if(floats){seenFloat=true;if(seenSink)recovered=true;}else seenSink=true;
     lastCargo=cargo;
-    q('#park-modelHull').style.transform=`translateY(${floats?(20+cargo*15)/120*70-20:90}px)`;
-    q('#park-modelCaption').textContent=floats?'静静浮着：水的托举和总重量一样大':'装得太多，船可能进水下沉';
+    q('#parkBoatPosition').style.transform=`translateY(${floats?cargo*3:95}px) rotate(${floats?0:8}deg)`;
+    q('#parkLakeCaption').textContent=floats?'浮起来啦！水托住了小船和玩具':'太重啦！拿下一些玩具再试试';
     q('#parkResult').textContent=`${prediction===(floats?'float':'sink')?'和你的猜想一样！':'结果不一样，也是一条新线索！'} ${cargo}件玩具：${floats?'小船浮着。试着再多装一些。':'超过这艘模型船的承载限度了。拿下一些玩具，再试一次。'}`;
     q('#parkLaunch').disabled=true;checks();
   };

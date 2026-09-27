@@ -7,6 +7,7 @@ files.push('assets/video/pacha-park-story-v2.mp4','assets/video/pacha-park-poste
 files.push('demo/game.js','demo/game.css','assets/pets/pacha-room-v1.png');
 files.push('demo/beginner.js','demo/beginner.css');
 files.push('demo/park-adventure.js','demo/park-adventure.css');
+files.push('demo/visual-upgrade.js','demo/visual-upgrade.css','assets/pets/park-toy-boat-v1.png');
 files.push('assets/video/pacha-gravity-v1.mp4','assets/video/pacha-gravity-poster-v1.jpg');
 files.push('assets/video/pacha-buoyancy-v1.mp4','assets/video/pacha-buoyancy-poster-v1.jpg');
 for(const file of files){const dest=path.join(root,'dist',file);mkdirSync(path.dirname(dest),{recursive:true});copyFileSync(path.join(root,file),dest);}
